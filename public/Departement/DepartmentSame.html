@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Cards</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+
+    .form-container {
+      padding: 20px;
+      text-align: center;
+      background-color: #333;
+      color: #fff;
+    }
+
+    .form-container button {
+      margin: 10px 5px;
+      padding: 10px;
+      font-size: 16px;
+      background-color: #555;
+      border: none;
+      border-radius: 4px;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .form-container button:hover {
+      background-color: #666;
+    }
+
+    .cards-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .card {
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      margin: 10px;
+      padding: 20px;
+      width: 300px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-image {
+      width: 100%;
+      height: auto;
+      border-radius: 4px;
+      margin-bottom: 15px;
+    }
+
+    .card-content {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+    }
+
+    .card-title {
+      margin: 0;
+      font-size: 1.5em;
+      color: #333;
+    }
+
+    .card-description {
+      margin: 10px 0;
+      color: #666;
+    }
+
+    .card-meta p {
+      margin: 5px 0;
+      color: #444;
+    }
+  </style>
+</head>
+<body>
+  <div class="form-container">
+    <!-- Form has been removed -->
+  </div>
+
+  <div id="cardsContainer" class="cards-container">
+    <!-- Cards will be appended here dynamically -->
+  </div>
+
+  <script>
+    window.onload = function() {
+      fetch('/fetch-projects', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      .then(response => response.json())
+      .then(data => {
+        // Debugging: Check what the response contains
+        console.log('Response data:', data);
+
+        // Check for error object
+        if (data.error) {
+          throw new Error(data.error);
+        }
+
+        // Check if the response is an array
+        if (!Array.isArray(data)) {
+          throw new TypeError('Expected an array of projects');
+        }
+
+        const cardsContainer = document.getElementById('cardsContainer');
+        cardsContainer.innerHTML = ''; // Clear previous results
+
+        if (data.length === 0) {
+          cardsContainer.innerHTML = '<p>No projects found.</p>';
+          return;
+        }
+
+        data.forEach(project => {
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.innerHTML = `
+            <img src="${project.image_upload || 'default-image.jpg'}" alt="${project.name}" class="card-image">
+            <div class="card-content">
+              <h2 class="card-title">${project.name}</h2>
+              <p class="card-description">${project.description || 'No description available'}</p>
+              <div class="card-meta">
+                <p>Start: ${new Date(project.start_date).toLocaleDateString()} | End: ${new Date(project.end_date).toLocaleDateString()}</p>
+                <p>Email: ${project.email}</p>
+                <p>Phone: ${project.phone_number}</p>
+                <p>Address: ${project.address}</p>
+              </div>
+            </div>
+          `;
+          cardsContainer.appendChild(card);
+        });
+      })
+      .catch(error => console.error('Error:', error));
+    };
+  </script>
+</body>
+</html>
